@@ -74,7 +74,7 @@ class Schedule:
                     break
             jobs.append(current_job)
 
-    def get_operation_end(self, target_job, target_operation):
+    def get_operation_end(self, target_job: int, target_operation: int):
         for machine in self.schedule:
             time = 0
             for operation in machine:
