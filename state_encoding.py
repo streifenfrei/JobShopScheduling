@@ -1,4 +1,6 @@
 import copy
+import random
+import sys
 from itertools import groupby
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -40,6 +42,21 @@ class Schedule:
         # nested list similar to the JobShopProblem jobs list
         # but: list of lists (machines) of operations
         self.schedule = schedule
+        self.jobs = {}
+        self._update_jobs()
+
+    def _update_jobs(self):
+        self.jobs = {}
+        for machine in self.schedule:
+            for operation_tuple in machine:
+                job = operation_tuple[0]
+                if job is not None:
+                    if job not in self.jobs.keys():
+                        self.jobs[job] = []
+                    self.jobs[job].append(operation_tuple)
+        for job in self.jobs:
+            job_list = self.jobs[job]
+            job_list.sort(key=lambda x: x[1])
 
     @staticmethod
     def create_from_problem(problem: JobShopProblem):
@@ -55,6 +72,7 @@ class Schedule:
                         instance.schedule[machine] = []
                     instance.schedule[machine].append(operation_tuple)
                 else:
+                    instance._update_jobs()
                     last_operation_end = instance._get_operation_end(job, operation - 1)
                     machine_end = instance._get_machine_duration(machine)
                     offset = last_operation_end - machine_end
@@ -62,6 +80,7 @@ class Schedule:
                         instance.schedule[machine].append([None, None, machine, offset])
                     instance.schedule[machine].append(operation_tuple)
             jobs = [job for job in jobs if job != []]
+        instance._update_jobs()
         return instance
 
     def _get_operations_at_timestamp(self, timestamp: int):
@@ -79,13 +98,14 @@ class Schedule:
         return operations
 
     def _get_operation_end(self, target_job: int, target_operation: int):
-        for machine in self.schedule:
-            time = 0
-            for operation in machine:
-                job, operation, _, time_steps = operation
-                time += time_steps
-                if job == target_job and operation == target_operation:
-                    return time
+        machine_index = self.jobs[target_job][target_operation][2]
+        machine = self.schedule[machine_index]
+        time = 0
+        for operation in machine:
+            job, operation, _, time_steps = operation
+            time += time_steps
+            if job == target_job and operation == target_operation:
+                return time
         return None
 
     def _get_machine_duration(self, machine):
@@ -127,46 +147,112 @@ class Schedule:
                     return False
         return True
 
+    # add space in front of operation
+    def _offset_operation(self, operation_tuple, offset):
+        job, operation, machine, time_steps = operation_tuple
+        machine_list = self.schedule[machine]
+        operation_index = machine_list.index(operation_tuple)
+        previous_op_of_machine_index = operation_index - 1
+        previous_op_of_machine = None
+        if previous_op_of_machine_index >= 0:
+            previous_op_of_machine = machine_list[previous_op_of_machine_index]
+        # add space in front
+        if previous_op_of_machine is None:
+            # (operation is the first in the machine (no previous operation))
+            machine_list.insert(0, [None, None, machine, offset])
+        else:
+            if previous_op_of_machine[0] is None:
+                # if previous operation is also a space, just increase it by the offset
+                previous_op_of_machine[3] += offset
+            else:
+                # insert new space
+                machine_list.insert(operation_index, [None, None, machine, offset])
+        # reduce succeeding spaces by offset
+        index = machine_list.index(operation_tuple) + 1
+        while index < len(machine_list) and offset > 0:
+            operation = machine_list[index]
+            if operation[0] is None:
+                old_space_size = operation[3]
+                operation[3] -= offset
+                if operation[3] <= 0:
+                    machine_list.remove(operation)
+                    index -= 1
+                offset -= old_space_size
+            index += 1
+
+    def _is_cyclic(self):
+        checked_operations = []
+        for machine in self.schedule:
+            for operation_tuple in machine:
+                if operation_tuple not in checked_operations and operation_tuple[0] is not None:
+                    is_cyclic, seen_operations = self._is_cyclic_recursion(operation_tuple, [])
+                    if is_cyclic:
+                        return True
+                    checked_operations += seen_operations
+        return False
+
+    def _is_cyclic_recursion(self, operation_tuple, seen_operations):
+        seen_operations = set(copy.copy(seen_operations))
+        seen_operations.add(operation_tuple)
+        job, operation, machine, time_steps = operation_tuple
+        dependencies = []
+        # previous operation in machine
+        machine_list = self.schedule[machine]
+        machine_index = machine_list.index(operation_tuple)
+        for index in reversed(range(machine_index)):
+            current_operation = machine_list[index]
+            if current_operation[0] is not None:
+                dependencies.append(current_operation)
+                break
+        # previous operation in job
+        if operation != 0:
+            dependencies.append(self.jobs[job][operation-1])
+
+        for dependency in dependencies:
+            if dependency in seen_operations:
+                return True, seen_operations
+            else:
+                is_cyclic, seen_operations_new = self._is_cyclic_recursion(dependency, seen_operations)
+                seen_operations.union(seen_operations_new)
+                if is_cyclic:
+                    return True, seen_operations
+        return False, seen_operations
+
     def _add_idle_spaces(self):
-        if self.is_valid():
-            return
         time_stamp = 0
         # operations (list) contains all operations at the current time stamp
-        last_operations = []
         operations = self._get_operations_at_timestamp(time_stamp)
+        # increment time stamp continuously
         while operations:
-            # group operations by jobs
+            # group operations by jobs (each group contains all operations belonging to one job)
             groups = groupby(operations, lambda x: x[0])
             for key, group in groups:
                 group = list(group)
-                # if there are multiple operations belonging to the same job: add space accordingly
-                if (len(group)) != 1 and group[0][0] is not None:
-                    # sort operations by operation_id
+                # if group is not group of spaces
+                if group[0][0] is not None:
                     group.sort(key=lambda x: x[1])
-                    group.pop(0)
-                    # add space to every operation, so they are not parallel
-                    for operation_tuple in group:
-                        job, operation, machine, time_steps = operation_tuple
-                        previous_op_of_job_end = self._get_operation_end(job, operation-1)
-                        # offset to last operation of that job
-                        offset = previous_op_of_job_end - time_stamp
-                        previous_op_of_machine = next((x for x in last_operations if x[2] == machine), None)
-                        machine_list = self.schedule[machine]
-                        # add space in front
-                        if previous_op_of_machine is None:
-                            # (operation is the first in the machine (no previous operation))
-                            machine_list.insert(0, (None, None, machine, offset))
-                        else:
-                            if previous_op_of_machine[0] is None:
-                                # if previous operation is also a space, just increase it by the offset
-                                previous_op_of_machine[3] += offset
-                            else:
-                                # insert new space
-                                index = machine_list.index(operation_tuple)
-                                machine_list.insert(index, [None, None, machine, offset])
-            last_operations = operations
-            operations = self._get_operations_at_timestamp(time_stamp)
+                    # do for earliest operation in that group
+                    earliest_operation = group.pop(0)
+                    job, operation, machine, time_steps = earliest_operation
+                    jobs_previous_op_end = 0
+                    # add offset to previous operation in job if necessary
+                    if operation != 0:
+                        jobs_previous_op_end = self._get_operation_end(job, operation-1)
+                        operation_start = self._get_operation_end(job, operation) - time_steps
+                        offset = jobs_previous_op_end - operation_start
+                        if offset > 0:
+                            self._offset_operation(earliest_operation, offset)
+                    last_operation_end = jobs_previous_op_end + time_steps
+                    # add offset for next operations in job if required
+                    for current_operation in range(operation + 1, len(self.jobs[job])):
+                        current_operation_tuple = self.jobs[job][current_operation]
+                        time_steps = current_operation_tuple[3]
+                        current_operation_start = self._get_operation_end(job, current_operation) - time_steps
+                        offset = last_operation_end - current_operation_start
+                        if offset > 0:
+                            self._offset_operation(current_operation_tuple, offset)
             time_stamp += 1
+            operations = self._get_operations_at_timestamp(time_stamp)
 
     # semi deep copy (references to jobs are kept) and remove idle spaces
     def _copy_schedule_and_compress(self):
@@ -179,6 +265,7 @@ class Schedule:
             new_schedule.append(new_machine)
         return new_schedule
 
+    # calculates whole neighbourhood (would not recommend using it as it takes forever)
     def get_neighbourhood(self):
         neighbourhood = []
         schedule_compressed = self._copy_schedule_and_compress()
@@ -193,17 +280,21 @@ class Schedule:
                         # if valid pair of operations (no idle spaces and do not belong to the same job) is found
                         if operation2[0] is not None and operation1[0] != operation2[0]:
                             new_schedule = self._copy_schedule_and_compress()
+
                             # switch operations in new schedule
                             new_machine = new_schedule[machine_index]
                             new_machine[operation1_index] = operation2
                             new_machine[operation2_index] = operation1
                             new_schedule = Schedule(new_schedule)
-                            # add spaces and make schedule valid
-                            new_schedule._add_idle_spaces()
-                            neighbourhood.append(new_schedule)
+                            # add spaces and make schedule valid if schedule is not cyclic
+                            if not new_schedule._is_cyclic():
+                                new_schedule._add_idle_spaces()
+                                neighbourhood.append(new_schedule)
+                                sys.stdout.write('\rGenerated {0} neighbours'.format(len(neighbourhood)))
+                                sys.stdout.flush()
         return neighbourhood
 
-    def visualize(self):
+    def visualize(self, with_labels=True):
         ax = plt.gca()
         ax.yaxis.grid()
         ax.set_xlim(0, self.get_length())
@@ -220,6 +311,8 @@ class Schedule:
                 else:
                     color = cmap(job)
                 rectangle = patches.Rectangle((x, y), time_steps, 1, color=color)
+                if with_labels and operation is not None:
+                    plt.text(x+(time_steps / 2), y + 0.5, str(operation), ha='center', va='center')
                 ax.add_patch(rectangle)
                 x += time_steps
 
@@ -228,18 +321,30 @@ if __name__ == '__main__':
     problem = JobShopProblem.load_from_file("data/abz5")
     initial_schedule = Schedule.create_from_problem(problem)
     neighbourhood = initial_schedule.get_neighbourhood()
-
+    non_valid_neighbours = []
+    for neighbour in neighbourhood:
+        if not neighbour.is_valid():
+            non_valid_neighbours.append(neighbour)
     # visualization
     # initial schedule
     fig = plt.figure()
     fig.add_subplot(1, 1, 1)
     initial_schedule.visualize()
     plt.show()
-    # first 4 neighbours
-    fig = plt.figure()
-    for neighbour_index in range(len(neighbourhood[:4])):
-        neighbour = neighbourhood[neighbour_index]
-        fig.add_subplot(2, 2, neighbour_index+1)
-        neighbour.visualize()
+    # some random neighbours
+    fig = plt.figure(figsize=(10, 8))
+    neighbourhood_sample = random.sample(neighbourhood, 9)
+    for neighbour_index in range(len(neighbourhood_sample)):
+        neighbour = neighbourhood_sample[neighbour_index]
+        fig.add_subplot(3, 3, neighbour_index+1)
+        neighbour.visualize(with_labels=True)
+    plt.show()
+    # some non valid neighbours
+    fig = plt.figure(figsize=(10, 8))
+    neighbourhood_sample = random.sample(non_valid_neighbours, 9)
+    for neighbour_index in range(len(neighbourhood_sample)):
+        neighbour = non_valid_neighbours[neighbour_index]
+        fig.add_subplot(3, 3, neighbour_index+1)
+        neighbour.visualize(with_labels=True)
     plt.show()
 
