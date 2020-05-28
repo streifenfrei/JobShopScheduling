@@ -317,8 +317,12 @@ class Schedule:
                 x += time_steps
 
 
+    def copy(self):
+        return Schedule(self.schedule)
+
+
 if __name__ == '__main__':
-    problem = JobShopProblem.load_from_file("data/abz5")
+    problem = JobShopProblem.load_from_file("data/4x4")
     initial_schedule = Schedule.create_from_problem(problem)
     neighbourhood = initial_schedule.get_neighbourhood()
     non_valid_neighbours = []
