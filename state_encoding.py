@@ -106,7 +106,9 @@ class Schedule:
             time += time_steps
             if job == target_job and operation == target_operation:
                 return time
+        print(target_job, target_operation)
         return None
+    
 
     def _get_machine_duration(self, machine):
         if isinstance(machine, int):
@@ -280,7 +282,6 @@ class Schedule:
                         # if valid pair of operations (no idle spaces and do not belong to the same job) is found
                         if operation2[0] is not None and operation1[0] != operation2[0]:
                             new_schedule = self._copy_schedule_and_compress()
-
                             # switch operations in new schedule
                             new_machine = new_schedule[machine_index]
                             new_machine[operation1_index] = operation2
@@ -293,6 +294,147 @@ class Schedule:
                                 sys.stdout.write('\rGenerated {0} neighbours'.format(len(neighbourhood)))
                                 sys.stdout.flush()
         return neighbourhood
+
+    
+    def _combine_empty_spaces(self, machine_num):
+            machine = self.schedule[machine_num]
+            for op_index, op in enumerate(machine):
+                if op_index < len(machine) - 1:
+                    next_op = machine[op_index + 1]
+                    if op[0] == None and next_op[0] == None:
+                        j, o, m, t = op
+                        n_j, n_o, n_m, n_t = next_op
+                        op = (None, None, machine_num, n_t + t)
+                        machine[op_index] = op
+                        machine.pop(op_index + 1)
+                        self.schedule[machine_num] = machine
+    
+
+    def m_minimize_empty_spaces(self, machine_num):
+         machine = self.schedule[machine_num]
+         for op_index, op in enumerate(machine):
+             if op_index < len(machine) and op_index > 0:
+                 prev_op = machine[op_index - 1]
+                 if op[0] != None and prev_op[0] == None:
+                     j, o, m, t = op
+                     p_j, p_o, p_m, p_t =  prev_op
+                     if o > 0: 
+                        op_begin = self._get_operation_begin(machine_num, j, o)
+                        p_op_end = self._get_operation_end(j, o - 1)
+                        delta = op_begin - p_op_end
+                        if delta > 0:
+                            if delta >= p_t:
+                                 machine.pop(op_index - 1)
+                            else:       
+                                machine[op_index - 1] = (p_j, p_o, p_m, p_t - delta)
+
+
+    def _get_operation_begin(self, machine_num, target_job, target_op):
+        result = 0
+        for op in self.schedule[machine_num]:
+            if op[0] == target_job and op[1] == target_op:
+                return result
+            else:
+                result += op[3]
+        return "Error: target_op not in schedule"   
+
+
+    def print_schedule(self):
+        for machine in self.schedule:
+           print(machine)          
+
+
+    def _manuel_schedule(self, schedule):
+        self.schedule = schedule
+
+
+    def _decompress_two(self):
+        while not self.is_valid():         
+            for machine_num, machine_schedule in enumerate(self.schedule):
+                for op_index, operation in enumerate(machine_schedule):
+                    job, op, machine_num, time = operation
+                    if op != 0 and op is not None:
+                        pre_job_end = self._get_operation_end(job, op - 1)                        
+                        if pre_job_end == None:
+                            print("Error")
+                        op_begin = self._get_operation_begin(machine_num, job, op)                                          
+                        offset = pre_job_end - op_begin
+                        if offset > 0:
+                            if op_index < len(machine_schedule)  - 1:
+                                next_op = machine_schedule[op_index + 1]
+                                n_job, n_op, n_m, n_t = next_op
+                                if n_job == None:
+                                    if n_t - offset <= 0:
+                                        self.schedule[machine_num].pop(op_index + 1)
+                                    else:
+                                        machine_schedule[op_index + 1] = (None, None, machine_num, n_t - offset)
+                            blank_op = (None, None, machine_num, offset)        
+                            self.schedule[machine_num].insert(op_index, blank_op)                         
+                            self._combine_empty_spaces(machine_num)
+                            self.m_minimize_empty_spaces(machine_num)
+                              
+
+    def _random_neighbour_generator_two(self):
+        compressed_schedule = self._copy_schedule_and_compress()
+        schedule_index = [x for x in range(len(compressed_schedule))]
+        while schedule_index:
+            machine_number = random.randint(0, len(schedule_index) - 1)
+            machine_schedule_index = schedule_index.pop(machine_number)
+            machine_schedule = compressed_schedule[machine_schedule_index]
+            operations = [x for x in range(len(machine_schedule))]
+            while operations:
+                rand_op = random.randint(0, len(operations) - 1)               
+                operation_index  = operations.pop(rand_op)
+                operation_one = machine_schedule[operation_index]
+                for operation_two_index in operations:
+                    operation_two = machine_schedule[operation_two_index]
+                    if operation_one[0] != operation_two[0]:
+                        new_schedule = Schedule(self.schedule)._copy_schedule_and_compress()
+                        new_machine = new_schedule[machine_schedule_index]
+                        if new_machine != machine_schedule:
+                            print("Error", new_machine)
+                            exit()
+                        new_machine[operation_index] = operation_two
+                        new_machine[operation_two_index] = operation_one
+                        neighbour = Schedule(new_schedule)
+                        if not neighbour._is_cyclic():
+                            neighbour._add_idle_spaces()
+                            if neighbour.is_valid():
+                                yield neighbour
+        yield None
+        
+
+    def _random_neighbour_generator(self):
+        compressed_schedule = self._copy_schedule_and_compress()
+        schedule_index = [x for x in range(len(compressed_schedule))]
+        while schedule_index:
+            machine_number = random.randint(0, len(schedule_index) - 1)
+            print(machine_number)
+            machine_schedule_index = schedule_index.pop(machine_number)
+            machine_schedule = compressed_schedule[machine_schedule_index]
+            operations = [x for x in range(len(machine_schedule))]
+            while operations:
+                rand_op = random.randint(0, len(operations) - 1)
+                print("r. ", rand_op)
+                operation_index  = operations.pop(rand_op)
+                operation_one = machine_schedule[operation_index]
+                for operation_two_index in operations:
+                    operation_two = machine_schedule[operation_two_index]
+                    if operation_one[0] != operation_two[0]:
+                        new_schedule = Schedule(self.schedule)._copy_schedule_and_compress()
+                        new_machine = new_schedule[machine_schedule_index]
+                        if new_machine != machine_schedule:
+                            print("Error", new_machine)                           
+                            exit()
+                        new_machine[operation_index] = operation_two
+                        new_machine[operation_two_index] = operation_one
+                        neighbour = Schedule(new_schedule)
+                        if not neighbour._is_cyclic():
+                            neighbour._decompress_two()
+                            yield neighbour
+        yield None
+    
+
 
     def visualize(self, with_labels=True):
         ax = plt.gca()
@@ -324,6 +466,7 @@ class Schedule:
 if __name__ == '__main__':
     problem = JobShopProblem.load_from_file("data/4x4")
     initial_schedule = Schedule.create_from_problem(problem)
+    """
     neighbourhood = initial_schedule.get_neighbourhood()
     non_valid_neighbours = []
     for neighbour in neighbourhood:
@@ -343,6 +486,8 @@ if __name__ == '__main__':
         fig.add_subplot(3, 3, neighbour_index+1)
         neighbour.visualize(with_labels=True)
     plt.show()
+    """
+    """
     # some non valid neighbours
     fig = plt.figure(figsize=(10, 8))
     neighbourhood_sample = random.sample(non_valid_neighbours, 9)
@@ -351,4 +496,30 @@ if __name__ == '__main__':
         fig.add_subplot(3, 3, neighbour_index+1)
         neighbour.visualize(with_labels=True)
     plt.show()
+    """
 
+
+    sch = []
+    sch.append([(2, 0, 0, 6), (0, 0, 0, 4), (1, 2, 0, 4), (3, 2, 0, 4)])
+    sch.append([(2, 2, 1, 3), (0, 1, 1, 3), (1, 3, 1, 6), (3, 3, 1, 5)])
+    sch.append([(1, 0, 2, 4), (2, 1, 2, 3), (3, 1, 2, 3), (0, 2, 2, 5)])
+    sch.append([(3, 0, 3, 6), (1, 1, 3, 5), (2, 3, 3, 6), (0, 3, 3, 6)])
+    initial_schedule._manuel_schedule(sch)
+    fig = plt.figure()
+    fig.add_subplot(1, 1, 1)   
+    initial_schedule.visualize()
+    plt.show()
+    print(initial_schedule.get_length())
+    fig = plt.figure()
+    fig.add_subplot(1, 1, 1)
+    test_s = Schedule(initial_schedule._copy_schedule_and_compress())
+    test_s.visualize()
+    plt.show()
+    print("here")
+    fig = plt.figure()
+    fig.add_subplot(1, 1, 1)
+    test_s._decompress_two()
+    test_s.print_schedule()
+    test_s.visualize()
+    plt.show()
+    print(test_s.get_length())

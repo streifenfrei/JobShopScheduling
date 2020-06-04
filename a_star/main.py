@@ -6,8 +6,7 @@ def read_table(path):
         time_table = list()
         
         for line in table:
-            line.strip("\n")
-            job = line.split(" ")
+            job = line.strip().split(" ")
             job_plan = list()
             for instance in range(0, len(job), 2):
                 job_plan.append((int(job[instance]), int(job[instance + 1])))

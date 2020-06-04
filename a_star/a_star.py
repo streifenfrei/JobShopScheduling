@@ -23,9 +23,19 @@ class JobPart:
     def to_string(self):
         return str([self.job_number, self.instance, self.machine_number, self.time, self.active])
 
+def get_active_state_duration(state):
+    d = 0
+    for jp in state:
+        if jp.active:
+            d += jp.time
+    return d
+
+
+
 
 def heuristic(current_state, table, num_machines):
     val = 0
+    val = val + get_active_state_duration(current_state)
     for i in range(len(table)):
         for j in range(num_machines):
             for job_part in current_state:
