@@ -2,4 +2,4 @@ venv
 .idea
 __pycache__
 .vscode
-db.sqlite3
+practical_part/db.sqlite3
