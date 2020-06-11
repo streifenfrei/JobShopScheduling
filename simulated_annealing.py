@@ -112,13 +112,13 @@ def simulated_annealing_three(problem: JobShopProblem, max_time = 800, r = 0.001
         if(t <= 0):
             break
         local_opt = sol.copy()
-        neighbours = sol._random_neighbour_generator_del()
+        neighbours = sol._random_neighbour_generator_two()
         neighbour = neighbours.__next__()
         while opt_count <= 100:
             delta = sol.get_length() - neighbour.get_length()
             if delta >= 0:
                 sol = neighbour.copy()
-                neighbours = sol._random_neighbour_generator_del()                  
+                neighbours = sol._random_neighbour_generator_two()                  
                 if sol.get_length() < local_opt.get_length():
                     local_opt = sol.copy()
                     if local_opt.get_length() < best_solution.get_length():
@@ -128,7 +128,7 @@ def simulated_annealing_three(problem: JobShopProblem, max_time = 800, r = 0.001
                     opt_count += 1
             elif random.random() < calc_probability(delta, t):
                 sol = neighbour.copy()
-                neighbours = sol._random_neighbour_generator_del()              
+                neighbours = sol._random_neighbour_generator_two()              
             else:
                 opt_count += 1 
             neighbour = neighbours.__next__()
@@ -158,14 +158,14 @@ def main():
     """
 
     #solution with neighbourhood generator  
-    problem = JobShopProblem.load_from_file("data/4x4")
+    problem = JobShopProblem.load_from_file("data/3x3")
     solution, run_time = simulated_annealing_three(problem)
     print("\nsol2: ", solution.get_length())
     print("run_time: ", run_time)
     fig = plt.figure()
     fig.add_subplot(1, 1, 1)
     solution.visualize()
-    plt.show()
+    plt.savefig("images/" + str(run_time) + ".png")
 
     problem = JobShopProblem.load_from_file("data/4x4")
     solution, run_time = simulated_annealing_three(problem)
