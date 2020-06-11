@@ -19,20 +19,20 @@ class JobShopProblem:
         self.jobs = jobs
 
     @staticmethod
-    def load_from_file(file_path: str):
+    def load(table: str):
         jobs = []
-        with open(file_path, 'r') as file:
-            job = 0
-            for line in file:
-                jobs.append([])
-                split_line = line.strip().split(" ")
-                operation = 0
-                for index in range(0, len(split_line), 2):
-                    machine = int(split_line[index])
-                    time_steps = int(split_line[index + 1])
-                    jobs[job].append((job, operation, machine, time_steps))
-                    operation += 1
-                job += 1
+        job = 0
+        lines = table.split("\n")
+        for line in lines:
+            jobs.append([])
+            split_line = line.strip().split(" ")
+            operation = 0
+            for index in range(0, len(split_line), 2):
+                machine = int(split_line[index])
+                time_steps = int(split_line[index + 1])
+                jobs[job].append((job, operation, machine, time_steps))
+                operation += 1
+            job += 1
         return JobShopProblem(jobs)
 
 
@@ -82,6 +82,7 @@ class Schedule:
             jobs = [job for job in jobs if job != []]
         instance._update_jobs()
         return instance
+
 
     def _get_operations_at_timestamp(self, timestamp: int):
         operations = []

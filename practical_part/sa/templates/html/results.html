@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<head>
+    <meta name="author" content="Martin Lelis, Robert Rathmann" />
+    <title>Practical_Work_Run</title>
+    <link href="{% static 'sa/layout.css' %}" type="text/css" rel="stylesheet" />
+</head>
+<html>
+<body>
+    <header id="navbar">
+        <nav>
+            <ul id="nav_ul">
+                <li class="nav-elem">
+                    <a class="na" href="sa">Parctical Work</a>
+                </li>
+                <li class="nav-elem">
+                    <a  class="na" href="run">Run</a>
+                </li>
+                <li class="nav-elem">
+                    <a class="na" href="results">Results</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <article>
+        <h1 class="main_headline">
+            Test the algorithm
+        </h1>
+        <labe>Table</labe>
+        <div id="r_table">
+            <select >
+                <option value="3x3">
+                    3x3
+                </option>
+                <option value="4x4">
+                    4x4
+                </option>
+            </select>
+        </div>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Job</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="commit">
+            <button type="button">show_results</button>
+       </div>
+       <div id="r_table">
+        <select >
+            <option value="3x3">
+                3x3
+            </option>
+            <option value="4x4">
+                4x4
+            </option>
+        </select>
+    </div>
+    <div id=results>
+        <table>
+            <thead>
+                <tr>
+                    <th>Run time</th>
+                    <th>Result time</th>
+                    <th>schedule</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    </article>
+    <footer>
+        <p class="f_left">
+            Author:
+            Martin Lelils and Robert Rathmann
+        </p>
+        <p class="f_right">
+            Date: 07.06.2020
+        </p>
+    </footer>
+</body>
+</html>

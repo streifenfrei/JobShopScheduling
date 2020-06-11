@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<head>
+    <meta name="author" content="Martin Lelis, Robert Rathmann" />
+    <title>Practical_Work_Run</title>
+    <link href="{% static 'sa/layout.css' %}" type="text/css" rel="stylesheet" />
+</head>
+<html>
+<body>
+    <header id="navbar">
+        <nav>
+            <ul id="nav_ul">
+                <li class="nav-elem">
+                    <a class="na" href="sa">Parctical Work</a>
+                </li>
+                <li class="nav-elem">
+                    <a  class="na" href="run">Run</a>
+                </li>
+                <li class="nav-elem">
+                    <a class="na" href="results">Results</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <article>
+        <h1 class="main_headline">
+            Test the algorithm
+        </h1>
+        <labe>Table</labe>
+        <div id="r_table">
+            <select id="slected_table">
+                {% for table in tables %}
+                    <option value={{table.id}} class="table_change">
+                        {{ table.name }}
+                    </option>                   
+                {% endfor %}
+            </select>
+        </div>
+        <div id="commit">
+            <button class="blue_btng"  type="button" id="rsa">Run</button>
+            <button class="blue_btng"  type="button">Add New Table</button>
+        </div>
+        <div id="render_table">
+            {% include "html/table.html" %}
+        </div>
+    </article>
+    <footer>
+        <p class="f_left">
+            Author:
+            Martin Lelils and Robert Rathmann
+        </p>
+        <p class="f_right">
+            Date: 07.06.2020
+        </p>
+    </footer>
+</body>
+    <script src="{% static 'sa/jquery-3.4.1.min.js' %}"></script>
+    <script src="{% static 'sa/run.js' %}"></script>
+</html>

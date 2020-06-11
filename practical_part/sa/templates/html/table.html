@@ -1,0 +1,18 @@
+<table id="schedule">
+    <thead id="schedule_head">
+        <tr>
+            {% for l in head %}
+                <th>{{l}}</th>
+            {% endfor %}
+        </tr> 
+    </thead>
+        <tbody id="schedule_body">
+            {% for row in body %}
+                <tr>
+                    {% for elem in row%}
+                        <td>{{elem}}</td>
+                    {% endfor %}
+                </tr> 
+            {% endfor %}
+        </tbody>
+</table>

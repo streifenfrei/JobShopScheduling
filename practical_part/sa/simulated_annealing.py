@@ -1,9 +1,12 @@
-from state_encoding import JobShopProblem
-from state_encoding import Schedule
+from sa.state_encoding import JobShopProblem
+from sa.state_encoding import Schedule
 import matplotlib.pyplot as plt
 import math
 import time
 import random
+import os
+from .controller import TableController, ResultController
+
 
 
 
@@ -140,42 +143,32 @@ def simulated_annealing_three(problem: JobShopProblem, max_time = 800, r = 0.000
 
     
 
-def main():
+def run_simmulated_annealing(table_text: str, table_id, table_name, r_c : ResultController):
 
-     
-    """
-    #solution
-    problem = JobShopProblem.load_from_file("data/4x4")
-    solution, run_time = simulated_annealing_one(problem)
-    print("\nsol1: ", solution.get_length())
-    print("run_time: ", run_time)
-    fig = plt.figure()
-    fig.add_subplot(1, 1, 1)
-    solution.visualize()
-    plt.show()
-    """
 
     #solution with neighbourhood generator  
-    problem = JobShopProblem.load_from_file("data/3x3")
+    problem = JobShopProblem.load(table_text)
     solution, run_time = simulated_annealing_two(problem)
-    print("\nsol2: ", solution.get_length())
+    length = solution.get_length()
+    print("\nsol2: ", length)
     print("run_time: ", run_time)
     fig = plt.figure()
     fig.add_subplot(1, 1, 1)
     solution.visualize()
-    #plt.show()
-    plt.savefig("figures/test.png", format = "png")
+    if len(r_c.get_all_results(table_id)) < 5:
+        path ="static/sa/images/" + table_id + str(length) + str(run_time) + ".png"
+        plt.savefig(path)
+        r_c.add_result(table_id, run_time, length, path)
+    elif length < r_c.get_worst_solution(table_id).result_length:
+        os.remove(r_c.get_worst_solution(table_id).result_image)
+        r_c.get_worst_solution(table_id).delete()
+        path ="static/sa/images/" + table_id + str(length) + str(run_time) + ".png"
+        plt.savefig(path)
+        r_c.add_result(table_id, run_time, length, path)
 
-    problem = JobShopProblem.load_from_file("data/5x5")
-    solution, run_time = simulated_annealing_three(problem)
-    print("\nsol2: ", solution.get_length())
-    print("run_time: ", run_time)
-    fig = plt.figure()
-    fig.add_subplot(1, 1, 1)
-    solution.visualize()
-    plt.show()
     
+        
 
 
-if __name__ == "__main__":
-    main()
+
+
