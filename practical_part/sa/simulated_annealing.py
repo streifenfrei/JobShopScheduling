@@ -11,7 +11,7 @@ from .controller import TableController, ResultController
 
 
 def calc_probability(delta: float, t: float):
-    prob = (1 / (1 + math.exp((-1) * delta) / t))
+    prob = (1 / (1 + math.exp(-1 * delta) / t))
     return prob
 
 
@@ -33,6 +33,8 @@ def simulated_annealing_two(problem: JobShopProblem, max_time = 800, r = 0.0005,
         neighbour = neighbours.__next__()
         while opt_count <= 120:
             delta = sol.get_length() - neighbour.get_length()
+            print("delta: ", delta)
+            print("t: ", t)
             if delta >= 0:
                 sol = neighbour.copy()
                 neighbours = sol._random_neighbour_generator()                  
