@@ -7,6 +7,9 @@ urlpatterns = [
     path('run', views.run, name="run"),
     path('run/<str:id>/', views.change_table, name="change_table"),
     path('', views.index, name="index"),
-    path('run/<str:id>/execute', views.sa, name="sa")
+    path('run/<str:id>/execute', views.sa, name="sa"),
+    path('results', views.show_results, name='results'),
+    path('results/<str:id>/', views.filter_results, name="result_filter"),
+    path('results/<str:id>/show', views.show_schedule, name="show")
 ]
 

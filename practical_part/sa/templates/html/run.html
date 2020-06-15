@@ -27,7 +27,7 @@
             Test the algorithm
         </h1>
         <labe>Table</labe>
-        <div id="r_table">
+        <div id="r_table" class="table">
             <select id="slected_table">
                 {% for table in tables %}
                     <option value={{table.id}} class="table_change">
@@ -39,6 +39,17 @@
         <div id="commit">
             <button class="blue_btng"  type="button" id="rsa">Run</button>
             <button class="blue_btng"  type="button">Add New Table</button>
+        </div>
+        <div class="schedule_card" id="new_image_schedule">
+            <button class="close" id="new_schedule_close">
+                <svg class="bi bi-x" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>
+                    <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>
+                  </svg>
+            </button>
+            <img class="schedule" id="new_schedule">
+            <p id="time"></p>
+            <p id="runtime"></p>
         </div>
         <div id="render_table">
             {% include "html/table.html" %}

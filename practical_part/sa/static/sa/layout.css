@@ -55,6 +55,8 @@ article {
   border-bottom: solid;
   margin-left: 10px;
   margin-right: 10px;
+  justify-content: center;
+
 }
 
 .main_headline {
@@ -108,7 +110,7 @@ td{
   font-size: 14px;
 }
 
-#r_table{
+.table{
   margin-top: 10px;
   margin-bottom: 20px;
 }
@@ -119,4 +121,29 @@ td{
 .blue_btng:hover{
   cursor: pointer;
   box-shadow: grey;
+}
+
+
+.schedule_card{
+  position: fixed;
+  display: None;
+  margin-left: 30%;
+  margin-right: 30%;
+  background-color: rgb(102, 153, 255, 0.5);
+
+}
+
+.schedule{
+  display: block;
+  padding: 25px;
+}
+
+.close{
+  width: 25px;
+  height: 25px;
+
+}
+
+.close:hover{
+  cursor: pointer;
 }

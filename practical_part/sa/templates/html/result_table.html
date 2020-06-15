@@ -1,0 +1,32 @@
+<table id="result_table">
+    <thead>
+        <tr>
+            <th>Table_id</th>
+            <th>Table_name</th>
+            <th>Run time</th>
+            <th>Result time</th>
+            <th>schedule</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+            <tr>
+                <td>
+                    {{result.table.id}}
+                </td>
+                <td>
+                    {{result.table.name}}
+                </td>
+                <td>
+                    {{ result.runtime}}
+                </td>
+                <td>
+                    {{result.result_length}}
+                </td>
+                <td>
+                    <button class="blue_btng show" value={{result.id}} onclick="show_schedule(value)">Show Schedule</button>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

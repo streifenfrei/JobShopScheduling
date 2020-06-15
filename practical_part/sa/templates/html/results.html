@@ -4,6 +4,7 @@
     <meta name="author" content="Martin Lelis, Robert Rathmann" />
     <title>Practical_Work_Run</title>
     <link href="{% static 'sa/layout.css' %}" type="text/css" rel="stylesheet" />
+    <link href="{% static 'sa/bootstrap/css/bootstrap.min.css '%}">
 </head>
 <html>
 <body>
@@ -22,67 +23,31 @@
             </ul>
         </nav>
     </header>
-    <article>
+    <article id="main">
         <h1 class="main_headline">
-            Test the algorithm
+            Results
         </h1>
         <labe>Table</labe>
-        <div id="r_table">
-            <select >
-                <option value="3x3">
-                    3x3
-                </option>
-                <option value="4x4">
-                    4x4
-                </option>
-            </select>
-        </div>
-        <div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Job</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div id="commit">
-            <button type="button">show_results</button>
-       </div>
        <div id="r_table">
-        <select >
-            <option value="3x3">
-                3x3
-            </option>
-            <option value="4x4">
-                4x4
-            </option>
+        <select id="result_table_select">
+            {% for table in tables %}
+                <option value={{table.id}} class="table_change">
+                    {{ table.name }}
+                </option>                   
+            {% endfor %}
         </select>
     </div>
-    <div id=results>
-        <table>
-            <thead>
-                <tr>
-                    <th>Run time</th>
-                    <th>Result time</th>
-                    <th>schedule</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="schedule_card" id="image_schedule">
+        <button class="close" id="schedule_close">
+            <svg class="bi bi-x" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708-.708l7-7a.5.5 0 0 1 .708 0z"/>
+                <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 0 0 0 .708l7 7a.5.5 0 0 0 .708-.708l-7-7a.5.5 0 0 0-.708 0z"/>
+              </svg>
+        </button>
+        <img class="schedule "id="schedule_plt">
+    </div>
+    <div class="result_table" id=results>
+        {% include "html/result_table.html" %}
     </div>
     </article>
     <footer>
@@ -95,4 +60,7 @@
         </p>
     </footer>
 </body>
+    <script src="{% static 'sa/jquery-3.4.1.min.js' %}"></script>
+    <script src="{% static 'sa/result.js' %}"></script>
+    <script src="{% static 'sa/bootstrap/js/bootstrap.min.js' %}"></script>
 </html>

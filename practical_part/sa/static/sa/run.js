@@ -34,11 +34,31 @@ $(document).ready(function(){
                 'Id' : id, 
             },
             success: function(res) {
-                alert(res)
+                if (res.success = 1){
+                    alert("Succes")
+                    s = document.getElementById('new_schedule')
+                    s.src = res.source
+                    l = document.getElementById('time')
+                    l.innerHTML = res.result_length
+                    rt = document.getElementById('runtime')
+                    rt.innerHTML = res.runtime
+                    card = document.getElementById('new_image_schedule')
+                    card.style.display = "block"
+                }
+                else{
+                    alert("New Result is not in the top ten")
+                }
             },
             error: function () {
-                alert("erro_erer");
+                alert("Sa failed");
             }
         });
+    })
+
+    $("#new_schedule_close").click(function(){
+        
+        card = document.getElementById('new_image_schedule')
+        card.style.display = "none"
+    
     })
 })

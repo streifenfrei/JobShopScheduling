@@ -75,8 +75,10 @@ class ResultController:
 
     def add_result(self, table_id, run_time, length, path):
         table = self.table_controller.get_table_by_id(table_id)
-        result = Result(run_time=run_time, result_lenght=length, result_image=path, table=table)
+        print(type(length))
+        result = Result(runtime=run_time, result_length=length, result_image=path, table=table)
         result.save()
+        return result.pk
     
 
     def delete_result(self, r):
