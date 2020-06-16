@@ -409,13 +409,11 @@ class Schedule:
         schedule_index = [x for x in range(len(compressed_schedule))]
         while schedule_index:
             machine_number = random.randint(0, len(schedule_index) - 1)
-            print(machine_number)
             machine_schedule_index = schedule_index.pop(machine_number)
             machine_schedule = compressed_schedule[machine_schedule_index]
             operations = [x for x in range(len(machine_schedule))]
             while operations:
                 rand_op = random.randint(0, len(operations) - 1)
-                print("r. ", rand_op)
                 operation_index  = operations.pop(rand_op)
                 operation_one = machine_schedule[operation_index]
                 for operation_two_index in operations:
