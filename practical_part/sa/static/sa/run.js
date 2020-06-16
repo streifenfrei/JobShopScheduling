@@ -25,11 +25,13 @@ $(document).ready(function(){
     $("#rsa").click(function(){
         
         var id = $("#slected_table").val();
+        var temp = $("#temp").val();
+        var r_rate = $('#rate').val();
        
         $.ajax({
             type: "GET",
             async: true,
-            url:"/run/" + id + "/execute",
+            url:"/run/" + id + "/" + temp +"/" + r_rate + "/execute",
             data: {
                 'Id' : id, 
             },

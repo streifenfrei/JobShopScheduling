@@ -116,11 +116,19 @@ td{
 }
 #commit{
   margin-top: 10px;
+  
 }
 
 .blue_btng:hover{
   cursor: pointer;
   box-shadow: grey;
+  display: block;
+  margin-top: 10px;
+}
+
+.block_input{
+  border: 1px solid;
+  display: block;
 }
 
 
