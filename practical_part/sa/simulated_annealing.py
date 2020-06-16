@@ -76,14 +76,14 @@ def run_simmulated_annealing(table_text: str, table_id, table_name, r_c : Result
     fig.add_subplot(1, 1, 1)
     solution.visualize()
 
-    if len(r_c.get_all_results(table_id)) < 10:
-        print("path: ", os.getcwd())
+    if len(r_c.get_all_results(table_id)) < 20:
         if not os.path.exists("sa/static/images/" + table_id):
            os.mkdir("sa/static/images/" + table_id)
         path_1 ="sa/static/"
-        path_2 = "images/" + table_id + "/" + str(length) + str(run_time) + ".png"
+        result_id = r_c.add_result(table_id, run_time, length, temp, reduction_rate)
+        path_2 = "images/" + table_id + "/" + "result_"  + str(result_id) + ".png"
         plt.savefig(path_1 + path_2)
-        result_id = r_c.add_result(table_id, run_time, length, path_2)
+        r_c.update_path(result_id, path_2)
         return result_id
     elif length < r_c.get_worst_solution(table_id).result_length:
         os.remove(path_1 + r_c.get_worst_solution(table_id).result_image)
@@ -91,9 +91,10 @@ def run_simmulated_annealing(table_text: str, table_id, table_name, r_c : Result
         if not os.path.exists("sa/static/images/" + table_id):
             os.mkdir("sa/static/images/" + table_id)
         path_1 ="sa/static/"
-        path_2 = "images/" + table_id + "/" + str(length) + str(run_time) + ".png"
+        result_id = r_c.add_result(table_id, run_time, length, temp, reduction_rate)
+        path_2 = "images/" + table_id + "/" + "result_"  + str(result_id) + ".png"
         plt.savefig(path_1 + path_2)
-        result_id = r_c.add_result(table_id, run_time, length, path_2)
+        r_c.update_path(result_id, path_2)
         return result_id
     return None
 

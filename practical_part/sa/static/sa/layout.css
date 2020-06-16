@@ -116,6 +116,7 @@ td{
 }
 #commit{
   margin-top: 10px;
+  border: 1px solid;
   
 }
 
@@ -154,4 +155,8 @@ td{
 
 .close:hover{
   cursor: pointer;
+}
+
+#run_button{
+  margin: 10px;
 }

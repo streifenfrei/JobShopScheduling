@@ -32,6 +32,8 @@ class Table(models.Model):
 class Result(models.Model):
     runtime = models.FloatField()
     result_length = models.IntegerField()
-    result_image = models.CharField(max_length=255)
+    start_temp = models.FloatField(default=0.0)
+    reduction_rate = models.FloatField(default=0.0)
+    result_image = models.CharField(max_length=255, editable=True)
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
     

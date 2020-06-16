@@ -37,7 +37,6 @@ $(document).ready(function(){
             },
             success: function(res) {
                 if (res.success = 1){
-                    alert("Succes")
                     s = document.getElementById('new_schedule')
                     s.src = res.source
                     l = document.getElementById('time')
