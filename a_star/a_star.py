@@ -1,4 +1,5 @@
 import time
+import copy
 
 class JobPart:
 
@@ -23,6 +24,8 @@ class JobPart:
     def to_string(self):
         return str([self.job_number, self.instance, self.machine_number, self.time, self.active])
 
+
+
 def get_active_state_duration(state):
     d = 0
     for jp in state:
@@ -39,11 +42,11 @@ def heuristic(current_state, table, num_machines):
     for i in range(len(table)):
         for j in range(num_machines):
             for job_part in current_state:
-                if i == job_part.job_number and j >= job_part.instance:
+                if i == job_part.job_number and j >= job_part.instance and job_part.machine_number != -1:
                     if not(job_part.active and j == job_part.instance):
                         p = table[i][j]
                         val =  val + int(p[1])
-    return (val / len(table))
+    return (val / (len(table)))
 
 
 def get_active_parts(current_state):
@@ -181,7 +184,7 @@ def calc_time(cs, n_state):
             if c.job_number == ns.job_number:
                 if c.instance + 1 == ns.instance:
                     return c.time
-                elif c.time > ns.time:
+                elif c.instance == ns.instance and c.time > ns.time:
                     return c.time - ns.time
     
     return 0
@@ -200,6 +203,54 @@ def compare_s(first, second):
     return val
 
 
+def a_star_fast(table, start_pos, goal_pos, num_machines):
+    print("\n-----NEW----\n")
+    
+    start_time = time.time()
+    visited = set()
+    in_queue = set()
+    path_queue = dict()
+
+    g = {}
+    f = {}
+
+    visited.add(state_to_string(start_pos))
+    in_queue.add(state_to_string(start_pos))
+    g[path_to_string([start_pos])] = 0.0  
+    f[path_to_string([start_pos])] = g[path_to_string([start_pos])] + heuristic(start_pos, table, num_machines)
+    best_path_length = f[path_to_string([start_pos])]
+    path_queue[best_path_length] = [[start_pos]]
+    while path_queue:
+        if time.time() - start_time >= 100 * 60:
+            return "Error: Time out", None, time.time() - start_time
+        best_path_length = min(path_queue.keys())
+        path = path_queue[best_path_length].pop(0)
+        if len(path_queue[best_path_length]) == 0:
+            del path_queue[best_path_length]
+        last_state = path[-1]
+        if compare_s(goal_pos, last_state) and last_state != [] and g[path_to_string(path)] <= 33:
+            return path, g[path_to_string(path)], time.time() - start_time
+        visited.add(state_to_string(last_state))
+        in_queue.remove(state_to_string(last_state))
+        neighbours = get_neighbours(last_state, table, num_machines)
+        for neighbour in neighbours:
+            if state_to_string(neighbour) not in visited and state_to_string(neighbour) not in in_queue:
+                new_path = list(path)
+                new_path.append(neighbour)
+                g[path_to_string(new_path)] = g[path_to_string(path)] + calc_time(last_state, neighbour)
+                valuation = g[path_to_string(new_path)] + heuristic(neighbour, table, num_machines)
+                f[path_to_string(new_path)] = g[path_to_string(new_path)] + heuristic(neighbour, table, num_machines)
+                if valuation in path_queue.keys():
+                    path_queue[valuation].append(new_path)
+                else:
+                    path_queue[valuation] = []
+                    path_queue[valuation].append(new_path)
+                in_queue.add(state_to_string(neighbour))
+        if best_path_length < 0:
+            best_path_length = min(path_queue.keys())
+    return "error", None, None
+
+
 def a_star(table, start_pos, goal_pos, num_machines):
     print("\n-----NEW----\n")
     
@@ -215,9 +266,9 @@ def a_star(table, start_pos, goal_pos, num_machines):
     in_queue.add(state_to_string(start_pos))
     g[path_to_string([start_pos])] = 0.0  
     f[path_to_string([start_pos])] = g[path_to_string([start_pos])] + heuristic(start_pos, table, num_machines)
-    times = {}
+    
     while path_queue:
-        if time.time() - start_time >= 30 * 60:
+        if time.time() - start_time >= 100 * 60:
             return "Error: Time out", None, time.time() - start_time
         path = path_queue.pop(0)
         last_state = path[-1]
@@ -233,7 +284,6 @@ def a_star(table, start_pos, goal_pos, num_machines):
                 g[path_to_string(new_path)] = g[path_to_string(path)] + calc_time(last_state, neighbour)
                 f[path_to_string(new_path)] = g[path_to_string(new_path)] + heuristic(neighbour, table, num_machines)
                 i = 0
-                t = time.time()
                 while i < len(path_queue) and f[path_to_string(path_queue[i])] < f[path_to_string(new_path)]:
                     i += 1
                 path_queue.insert(i, new_path)
@@ -251,7 +301,7 @@ def a_star_main(table, num_machines, num_jobs):
         job += 1
 
 
-    result_path, result_time, execution_time = a_star(table, start_pos, goal_pos, num_machines)
+    result_path, result_time, execution_time = a_star_fast(table, start_pos, goal_pos, num_machines)
 
     if type(result_path) != str:
         print("Result:  ")
