@@ -16,10 +16,11 @@ def calc_probability(delta: float, t: float):
 
 
 
-def simulated_annealing(problem: JobShopProblem, max_time = 4000, r = 0.00005, t_max = 100000, t_min = 1):
+def simulated_annealing(problem: JobShopProblem, max_time = 6000, r = 0.00005, t_max = 100000, t_min = 1):
     start_time = time.time()
     initial_solution = Schedule.create_from_problem(problem)
     best_solution = initial_solution.copy()
+    sol = initial_solution.copy()
     sol = initial_solution.copy()
     j = 0
     t = t_max
@@ -30,25 +31,23 @@ def simulated_annealing(problem: JobShopProblem, max_time = 4000, r = 0.00005, t
         t = t * math.exp((-1) * j * r)
         if(t <= 0):
             break
-        sol = initial_solution.copy()
         local_opt = sol.copy()
         neighbours = sol._random_neighbour_generator()
         neighbour = neighbours.__next__()
-        while opt_count <= 250:
+        while opt_count <= 400:
             num_wh += 1
             delta = neighbour.get_length() - sol.get_length()
             if delta <= 0:
                 sol = neighbour.copy()
                 neighbours = sol._random_neighbour_generator()                  
                 if sol.get_length() < local_opt.get_length():
-                    local_opt = sol.copy()
+                    local_opt = sol.copy() 
                     if local_opt.get_length() < best_solution.get_length():
                         best_solution = sol.copy()
                         opt_count = 0                         
                 else:
                     opt_count += 1
             elif random.random() <= calc_probability(delta, t):
-                opt_count += 1 
                 sol = neighbour.copy()
                 neighbours = sol._random_neighbour_generator() 
                 num_pro += 1             

@@ -160,3 +160,8 @@ td{
 #run_button{
   margin: 10px;
 }
+
+
+.table_select{
+  border: 1px solid;
+}
