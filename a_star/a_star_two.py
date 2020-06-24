@@ -1,27 +1,29 @@
-class Machine:
+class JobPart:
 
-    def __init__(self, machine_num: int, job: int, job_instance: int, time: int, active: False):
-        self.machine_num = machine_num
+    def __init__(self, job, instance, machine, time, active=False):
         self.job = job
-        self.job_instance = job_instance
+        self.instance = instance
+        self.machine = machine
         self.time = time
         self.active = active
+    
+
+    def compare_to(self, state):
+        if (self.instance == state.instance) and (self.job == state.job):
+            if (self.machine == state.machine) and (self.time == state.time) and (self.active == state.active):               
+                return True
+            else:               
+                return False                
+        else:         
+            return False
 
 
 class State:
 
-    def __init__(self, machines: set, done_job_instaces: dict):
-        self.machines = dict()
-        self.done_job_instaces = done_job_instaces
-        for machine in machines:
-            self.machines[machine.machine_num] = machine
+    def __init__(self, job_parts: list):
+        self.job_parts = job_parts
     
 
-    def is_job_instance_done(self, job_num, num_intance):
-        if self.done_job_instaces[job_num] == num_intance:
-            return True
-        else:
-            return False
 
 
 def power_set(ps):
@@ -31,6 +33,9 @@ def power_set(ps):
         result.extend(new_subset)
     result.remove([])
     return result
+
+
+def is_valid(state: State):
 
 
 def get_neighbours(current_state)

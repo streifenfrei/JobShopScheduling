@@ -35,7 +35,6 @@ def get_active_state_duration(state):
 
 
 
-
 def heuristic(current_state, table, num_machines):
     val = 0
     val = val + get_active_state_duration(current_state)
@@ -158,6 +157,32 @@ def get_neighbours(current_state, table, m_numbers):
     return neighbours
 
 
+def test_neighbours(state, table, m_nums):
+    nb = get_neighbours(state, table, m_nums)
+    run = True
+    path = [state]
+    g = dict()
+    f = dict()
+    g[path_to_string([state])] = 0.0  
+    f[path_to_string([state])] = g[path_to_string([state])] + heuristic(state, table, m_nums)
+    print(f[path_to_string([state])])
+    while(run):
+        for index, n in enumerate(nb):
+            print(index, state_to_string(n))
+        i = int(input("index: "))
+        choice = nb[i]
+        new_path = list(path)
+        new_path.append(choice)
+        g[path_to_string(new_path)] = g[path_to_string(path)] + calc_time(path[-1], choice)
+        f[path_to_string(new_path)] = g[path_to_string(new_path)] + heuristic(choice, table, m_nums)
+        print("choice: ", state_to_string(choice))
+        print("h: ", heuristic(choice, table, m_nums))
+        print("g: ", g[path_to_string(new_path)])
+        print("f: ", f[path_to_string(new_path)])
+        path = new_path
+        nb = get_neighbours(choice, table, m_nums)
+
+
 def state_to_string(state):
         l = [None] * len(state)
         for s in state:
@@ -169,7 +194,7 @@ def state_to_string(state):
 def path_to_string(p):
     path = []
     for state in p:
-        l = [None] * len(state)
+        l = [None] * len(state) 
         for s in state:
             l[s.job_number] = [s.job_number, s.instance, s.machine_number, s.time, s.active]
         path.append(str(l))  
@@ -210,6 +235,7 @@ def a_star_fast(table, start_pos, goal_pos, num_machines):
     visited = set()
     in_queue = set()
     path_queue = dict()
+    
 
     g = {}
     f = {}
@@ -228,7 +254,7 @@ def a_star_fast(table, start_pos, goal_pos, num_machines):
         if len(path_queue[best_path_length]) == 0:
             del path_queue[best_path_length]
         last_state = path[-1]
-        if compare_s(goal_pos, last_state) and last_state != [] and g[path_to_string(path)] <= 33:
+        if compare_s(goal_pos, last_state) and last_state != [] and g[path_to_string(path)]:
             return path, g[path_to_string(path)], time.time() - start_time
         visited.add(state_to_string(last_state))
         in_queue.remove(state_to_string(last_state))
@@ -245,7 +271,8 @@ def a_star_fast(table, start_pos, goal_pos, num_machines):
                 else:
                     path_queue[valuation] = []
                     path_queue[valuation].append(new_path)
-                in_queue.add(state_to_string(neighbour))
+                if not compare_s(goal_pos, neighbour):
+                    in_queue.add(state_to_string(neighbour))
         if best_path_length < 0:
             best_path_length = min(path_queue.keys())
     return "error", None, None
@@ -303,9 +330,12 @@ def a_star_main(table, num_machines, num_jobs):
 
     result_path, result_time, execution_time = a_star_fast(table, start_pos, goal_pos, num_machines)
 
+    #test_neighbours(start_pos, table, num_machines)
+
     if type(result_path) != str:
         print("Result:  ")
-        print(path_to_string(result_path), result_time)
+        print(path_to_string(result_path))
+        print("time: ", result_time)
         print("runn_time: ", execution_time)
     else:
         print(result_path)
