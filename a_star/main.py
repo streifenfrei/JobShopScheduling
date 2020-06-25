@@ -15,7 +15,7 @@ def read_table(path):
 
 
 def main():
-    table, num_jobs, num_machines = read_table("data/5x5")
+    table, num_jobs, num_machines = read_table("data/6x6")
     print(table)
     print("\n\n")
     a.a_star_main(table, num_machines, num_jobs)

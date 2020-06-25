@@ -35,7 +35,20 @@ def power_set(ps):
     return result
 
 
-def is_valid(state: State):
+def is_valid(pos, m_numbers):   
+    machine_numbers = []
+    times = list()
+    for elem in pos:
+        if elem.instance >= m_numbers and elem.active == False:
+            return False, None
+        machine_numbers.append(elem.machine_number)
+        times.append(elem.time)
+    if len(machine_numbers) == len(set(machine_numbers)):
+        if len(times) > 0:
+            return True, min(times)
+        else:
+            return True, None
+    else: 
+        return False, None
 
 
-def get_neighbours(current_state)
