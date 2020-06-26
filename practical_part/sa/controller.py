@@ -73,10 +73,10 @@ class ResultController:
         return results
     
 
-    def add_result(self, table_id, run_time, length,  start_temp, reduction_rate):
+    def add_result(self, table_id, run_time, length,  count, start_temp, reduction_rate):
         table = self.table_controller.get_table_by_id(table_id)
         print(type(length))
-        result = Result(runtime=run_time, result_length=length, start_temp=start_temp, reduction_rate=reduction_rate, table=table)
+        result = Result(runtime=run_time, result_length=length, start_temp=start_temp, reduction_rate=reduction_rate, table=table, count=count)
         result.save()
         return result.pk
     

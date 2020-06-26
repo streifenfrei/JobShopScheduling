@@ -34,6 +34,7 @@ class Result(models.Model):
     result_length = models.IntegerField()
     start_temp = models.FloatField(default=0.0)
     reduction_rate = models.FloatField(default=0.0)
+    count = models.IntegerField(default=0.0)
     result_image = models.CharField(max_length=255, editable=True)
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
     

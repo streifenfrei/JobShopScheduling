@@ -25,6 +25,20 @@ nav {
   
 }
 
+#introduction{
+  justify-content: center;
+  border: 1px blue solid;
+}
+
+.intro{
+  padding-top: 5px;
+  padding-bottom: 5px;
+  position: flex;
+  margin-left: 30%;
+  margin-right: 30%;
+  
+}
+
 
 .nav-elem{
   list-style: none;

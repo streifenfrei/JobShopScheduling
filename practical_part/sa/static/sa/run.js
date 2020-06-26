@@ -27,15 +27,19 @@ $(document).ready(function(){
         var id = $("#slected_table").val();
         var temp = $("#temp").val();
         var r_rate = $('#rate').val();
+        var count = $('#count').val();
+        var btng = document.getElementById('rsa')
+        btng.style.backgroundColor = "Indigo"
        
         $.ajax({
             type: "GET",
             async: true,
-            url:"/run/" + id + "/" + temp +"/" + r_rate + "/execute",
+            url:"/run/" + id + "/" + temp +"/" + r_rate + "/" + count + "/execute",
             data: {
                 'Id' : id, 
             },
             success: function(res) {
+                btng.style.backgroundColor = "Blue"
                 if (res.success = 1){
                     s = document.getElementById('new_schedule')
                     s.src = res.source

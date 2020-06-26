@@ -7,6 +7,7 @@
             <th>Result time</th>
             <th>Start temp</th>
             <th>Reduction_rate</th>
+            <th>Count</th>
             <th>schedule</th>
         </tr>
     </thead>
@@ -30,6 +31,9 @@
                 </td>
                 <td>
                     {{result.reduction_rate}}
+                </td>
+                <td>
+                    {{result.count}}
                 </td>
                 <td>
                     <button class="blue_btng show" value={{result.id}} onclick="show_schedule(value)">Show Schedule</button>

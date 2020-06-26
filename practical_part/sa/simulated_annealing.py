@@ -15,17 +15,12 @@ def calc_probability(delta: float, t: float):
     return prob
 
 
-
-def simulated_annealing(problem: JobShopProblem, max_time = 6000, r = 0.00005, t_max = 100000, t_min = 1):
+def simulated_annealing(problem: JobShopProblem, max_time = 6000, r = 0.01, t_max = 1000, t_min = 1, count=50):
     start_time = time.time()
-    initial_solution = Schedule.create_from_problem(problem)
-    best_solution = initial_solution.copy()
-    sol = initial_solution.copy()
-    sol = initial_solution.copy()
+    sol = Schedule.create_from_problem(problem)
+    best_solution = sol.copy()
     j = 0
     t = t_max
-    num_pro = 0
-    num_wh = 0
     while t >= t_min and time.time() - start_time <= max_time:
         opt_count = 0
         t = t * math.exp((-1) * j * r)
@@ -34,35 +29,33 @@ def simulated_annealing(problem: JobShopProblem, max_time = 6000, r = 0.00005, t
         local_opt = sol.copy()
         neighbours = sol._random_neighbour_generator()
         neighbour = neighbours.__next__()
-        while opt_count <= 400:
-            num_wh += 1
+        while opt_count <= count:
             delta = neighbour.get_length() - sol.get_length()
             if delta <= 0:
                 sol = neighbour.copy()
                 neighbours = sol._random_neighbour_generator()                  
                 if sol.get_length() < local_opt.get_length():
-                    local_opt = sol.copy() 
+                    local_opt = sol.copy()
+                    opt_count = 0
                     if local_opt.get_length() < best_solution.get_length():
-                        best_solution = sol.copy()
-                        opt_count = 0                         
+                        best_solution = sol.copy()                       
                 else:
                     opt_count += 1
             elif random.random() <= calc_probability(delta, t):
                 sol = neighbour.copy()
-                neighbours = sol._random_neighbour_generator() 
-                num_pro += 1             
+                neighbours = sol._random_neighbour_generator()
+                opt_count += 1              
             else:
                 opt_count += 1 
             neighbour = neighbours.__next__()
             if neighbour == None:
-                print("NONENclear")
                 break
         j += 1
     return best_solution, time.time() - start_time
 
     
 
-def run_simmulated_annealing(table_text: str, table_id, table_name, r_c : ResultController, temp=10000.0, reduction_rate=0.0001):
+def run_simmulated_annealing(table_text: str, table_id, table_name, r_c : ResultController, temp=10000.0, reduction_rate=0.0001, count=50):
 
     print(temp, reduction_rate)
     #solution with neighbourhood generator  
@@ -75,11 +68,11 @@ def run_simmulated_annealing(table_text: str, table_id, table_name, r_c : Result
     fig.add_subplot(1, 1, 1)
     solution.visualize()
 
-    if len(r_c.get_all_results(table_id)) < 20:
+    if len(r_c.get_all_results(table_id)) < 40:
         if not os.path.exists("sa/static/images/" + table_id):
            os.mkdir("sa/static/images/" + table_id)
         path_1 ="sa/static/"
-        result_id = r_c.add_result(table_id, run_time, length, temp, reduction_rate)
+        result_id = r_c.add_result(table_id, run_time, length, count, temp, reduction_rate)
         path_2 = "images/" + table_id + "/" + "result_"  + str(result_id) + ".png"
         plt.savefig(path_1 + path_2)
         r_c.update_path(result_id, path_2)
@@ -90,7 +83,7 @@ def run_simmulated_annealing(table_text: str, table_id, table_name, r_c : Result
         if not os.path.exists("sa/static/images/" + table_id):
             os.mkdir("sa/static/images/" + table_id)
         path_1 ="sa/static/"
-        result_id = r_c.add_result(table_id, run_time, length, temp, reduction_rate)
+        result_id = r_c.add_result(table_id, run_time, length, count, temp, reduction_rate)
         path_2 = "images/" + table_id + "/" + "result_"  + str(result_id) + ".png"
         plt.savefig(path_1 + path_2)
         r_c.update_path(result_id, path_2)

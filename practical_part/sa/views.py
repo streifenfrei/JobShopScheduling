@@ -32,12 +32,12 @@ def change_table(request , id):
     return JsonResponse(data)
 
 
-def sa(request, id, temp, r_rate):
+def sa(request, id, temp, r_rate, count):
     if request.method == "GET":
         table = Table.objects.get(pk=id)
         t_controller = TableController(list(Table.objects.all()))
         r_controller = ResultController(t_controller)
-        result_id = run_simmulated_annealing(str(table.content), id, table.name, r_controller, temp=float(temp), reduction_rate=float(r_rate))
+        result_id = run_simmulated_annealing(str(table.content), id, table.name, r_controller, temp=float(temp), reduction_rate=float(r_rate), count=int(count))
         result = Result.objects.get(pk=result_id)
         if result_id is not None:
             data = {'success' : 1, 'source' : "static/" + result.result_image, 'result_length' : result.result_length, 'runtime' : result.runtime}
