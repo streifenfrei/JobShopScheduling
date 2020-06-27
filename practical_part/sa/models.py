@@ -35,6 +35,8 @@ class Result(models.Model):
     start_temp = models.FloatField(default=0.0)
     reduction_rate = models.FloatField(default=0.0)
     count = models.IntegerField(default=0.0)
+    count_increase = models.IntegerField(default=1.2)
+    sa_num = models.IntegerField(default=0)
     result_image = models.CharField(max_length=255, editable=True)
     table = models.ForeignKey(Table, on_delete=models.CASCADE)
     
