@@ -9,6 +9,7 @@
     font-family: "Roboto", sans-serif;
   }
  
+
 #navbar {
     border: 2px black solid;    
     position: sticky;
@@ -41,7 +42,7 @@ article{
   position: flex;
   border: 1px black solid;
   width: 40%;
-  height: 514px;
+  height: 100px;
   
 }
 
