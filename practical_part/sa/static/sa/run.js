@@ -58,6 +58,7 @@ $(document).ready(function(){
             },
             error: function () {
                 alert("Sa failed");
+                btng.style.backgroundColor = "Blue"
             }
         });
     })

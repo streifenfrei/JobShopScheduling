@@ -44,7 +44,7 @@ function show_schedule(id){
             s = document.getElementById('schedule_plt')
             s.src = res.source
             card = document.getElementById('image_schedule')
-            card.style.display = "block"
+            card.style.display = "flex"
 
         },
         error: function () {

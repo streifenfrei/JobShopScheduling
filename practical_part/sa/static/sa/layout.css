@@ -25,20 +25,45 @@ nav {
   
 }
 
-#introduction{
+article{
   justify-content: center;
+}
+
+#introduction{
   border: 1px blue solid;
 }
 
 .intro{
+  display: inline-block;
+  margin-top: 5px;
   padding-top: 5px;
   padding-bottom: 5px;
   position: flex;
-  margin-left: 30%;
-  margin-right: 30%;
+  border: 1px black solid;
+  width: 40%;
+  height: 514px;
   
 }
 
+.intro_img{
+  display: inline-block;
+  margin-top: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  position: flex;
+  height: 514px;
+  width: 40%;
+  border: 1px black solid;
+  
+}
+
+.intr_left{
+  margin-left: 8%;
+}
+
+.intr_right{
+  margin-right: 8%;
+}
 
 .nav-elem{
   list-style: none;
@@ -150,9 +175,10 @@ td{
 .schedule_card{
   position: fixed;
   display: None;
-  margin-left: 30%;
-  margin-right: 30%;
   background-color: rgb(102, 153, 255, 0.5);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 
 }
 
@@ -178,4 +204,9 @@ td{
 
 .table_select{
   border: 1px solid;
+}
+
+.dia{
+  width: 100%;
+  height: 500px;
 }

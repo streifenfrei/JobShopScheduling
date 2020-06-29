@@ -349,7 +349,7 @@ class Schedule:
         self.schedule = schedule
 
 
-    def _decompress_two(self):
+    def _decompress(self):
         while not self.is_valid():         
             for machine_num, machine_schedule in enumerate(self.schedule):
                 for op_index, operation in enumerate(machine_schedule):
@@ -429,7 +429,7 @@ class Schedule:
                         new_machine[operation_two_index] = operation_one
                         neighbour = Schedule(new_schedule)
                         if not neighbour._is_cyclic():
-                            neighbour._decompress_two()
+                            neighbour._decompress()
                             yield neighbour
         yield None
     
@@ -462,63 +462,3 @@ class Schedule:
         return Schedule(self.schedule)
 
 
-if __name__ == '__main__':
-    problem = JobShopProblem.load_from_file("data/4x4")
-    initial_schedule = Schedule.create_from_problem(problem)
-    """
-    neighbourhood = initial_schedule.get_neighbourhood()
-    non_valid_neighbours = []
-    for neighbour in neighbourhood:
-        if not neighbour.is_valid():
-            non_valid_neighbours.append(neighbour)
-    # visualization
-    # initial schedule
-    fig = plt.figure()
-    fig.add_subplot(1, 1, 1)
-    initial_schedule.visualize()
-    plt.show()
-    # some random neighbours
-    fig = plt.figure(figsize=(10, 8))
-    neighbourhood_sample = random.sample(neighbourhood, 9)
-    for neighbour_index in range(len(neighbourhood_sample)):
-        neighbour = neighbourhood_sample[neighbour_index]
-        fig.add_subplot(3, 3, neighbour_index+1)
-        neighbour.visualize(with_labels=True)
-    plt.show()
-    """
-    """
-    # some non valid neighbours
-    fig = plt.figure(figsize=(10, 8))
-    neighbourhood_sample = random.sample(non_valid_neighbours, 9)
-    for neighbour_index in range(len(neighbourhood_sample)):
-        neighbour = non_valid_neighbours[neighbour_index]
-        fig.add_subplot(3, 3, neighbour_index+1)
-        neighbour.visualize(with_labels=True)
-    plt.show()
-    """
-
-
-    sch = []
-    sch.append([(2, 0, 0, 6), (0, 0, 0, 4), (1, 2, 0, 4), (3, 2, 0, 4)])
-    sch.append([(2, 2, 1, 3), (0, 1, 1, 3), (1, 3, 1, 6), (3, 3, 1, 5)])
-    sch.append([(1, 0, 2, 4), (2, 1, 2, 3), (3, 1, 2, 3), (0, 2, 2, 5)])
-    sch.append([(3, 0, 3, 6), (1, 1, 3, 5), (2, 3, 3, 6), (0, 3, 3, 6)])
-    initial_schedule._manuel_schedule(sch)
-    fig = plt.figure()
-    fig.add_subplot(1, 1, 1)   
-    initial_schedule.visualize()
-    plt.show()
-    print(initial_schedule.get_length())
-    fig = plt.figure()
-    fig.add_subplot(1, 1, 1)
-    test_s = Schedule(initial_schedule._copy_schedule_and_compress())
-    test_s.visualize()
-    plt.show()
-    print("here")
-    fig = plt.figure()
-    fig.add_subplot(1, 1, 1)
-    test_s._decompress_two()
-    test_s.print_schedule()
-    test_s.visualize()
-    plt.show()
-    print(test_s.get_length())
