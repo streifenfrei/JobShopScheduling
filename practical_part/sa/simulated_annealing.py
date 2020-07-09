@@ -15,11 +15,12 @@ def calc_probability(delta: float, t: float):
     return prob
 
 
-def simulated_annealing(problem: JobShopProblem, max_time = 6200, r = 0.01, t_max = 1000, 
+def simulated_annealing(problem: JobShopProblem, max_time = 50000, r = 0.01, t_max = 1000, 
 t_min = 1, count=50, count_increase=1.2):
     start_time = time.time()
     sol = Schedule.create_from_problem(problem)
     best_solution = sol.copy()
+    max_cont = 1000
     j = 0
     t = t_max
     while t >= t_min and time.time() - start_time <= max_time:
@@ -44,7 +45,10 @@ t_min = 1, count=50, count_increase=1.2):
                 break
             h_count += 1
         j += 1
-        count = count * count_increase
+        if count < max_cont:
+            count = count * count_increase
+        else:
+            count = max_cont
     return best_solution, time.time() - start_time
 
     

@@ -374,35 +374,6 @@ class Schedule:
                             self._combine_empty_spaces(machine_num)
                             self.m_minimize_empty_spaces(machine_num)
                               
-
-    def _random_neighbour_generator_two(self):
-        compressed_schedule = self._copy_schedule_and_compress()
-        schedule_index = [x for x in range(len(compressed_schedule))]
-        while schedule_index:
-            machine_number = random.randint(0, len(schedule_index) - 1)
-            machine_schedule_index = schedule_index.pop(machine_number)
-            machine_schedule = compressed_schedule[machine_schedule_index]
-            operations = [x for x in range(len(machine_schedule))]
-            while operations:
-                rand_op = random.randint(0, len(operations) - 1)               
-                operation_index  = operations.pop(rand_op)
-                operation_one = machine_schedule[operation_index]
-                for operation_two_index in operations:
-                    operation_two = machine_schedule[operation_two_index]
-                    if operation_one[0] != operation_two[0]:
-                        new_schedule = Schedule(self.schedule)._copy_schedule_and_compress()
-                        new_machine = new_schedule[machine_schedule_index]
-                        if new_machine != machine_schedule:
-                            print("Error", new_machine)
-                            exit()
-                        new_machine[operation_index] = operation_two
-                        new_machine[operation_two_index] = operation_one
-                        neighbour = Schedule(new_schedule)
-                        if not neighbour._is_cyclic():
-                            neighbour._add_idle_spaces()
-                            if neighbour.is_valid():
-                                yield neighbour
-        yield None
         
 
     def _random_neighbour_generator(self):
