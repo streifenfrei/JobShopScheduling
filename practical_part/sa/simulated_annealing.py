@@ -20,6 +20,7 @@ t_min = 1, count=50, count_increase=1.2):
     start_time = time.time()
     sol = Schedule.create_from_problem(problem)
     best_solution = sol.copy()
+    max_count = 1200
     j = 0
     t = t_max
     while t >= t_min and time.time() - start_time <= max_time:
@@ -44,7 +45,12 @@ t_min = 1, count=50, count_increase=1.2):
                 break
             h_count += 1
         j += 1
-        count = count * count_increase
+        if count < max_count:
+            count = count * count_increase
+        else:
+            print("reached max_count")
+            count = max_count
+        
     return best_solution, time.time() - start_time
 
     
