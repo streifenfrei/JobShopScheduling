@@ -12,7 +12,7 @@ from .controller import TableController, ResultController
 def get_parameters(problem: JobShopProblem):
     temp = 300
     t_decrease = 1.1 - (1/problem.num_jobs)
-    count = 4 * problem.num_jobs
+    count = 2 * problem.num_jobs
     count_increase = 1.1 + (1/(problem.num_jobs))
     return (temp, t_decrease, count, count_increase)
 

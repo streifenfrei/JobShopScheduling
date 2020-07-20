@@ -32,7 +32,7 @@ In the Results section all results achieved so far are saved.
  Problem                 | Result       | Run time
 ------------------------ | -------------| ------------
 Taillard Open Shop 10x10 |  874         | 5982
-Taillard Job Shop 20x20  | 2312         | 100
+Taillard Job Shop 20x20  | 2312         | 1300
 Taillard Job Shop 50x20  | Content from cell 2 | cell
 
 The first table instance was chosen for each problem.

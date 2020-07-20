@@ -305,7 +305,7 @@ class Schedule:
 
     def random_neighbour_generator(self):
         compressd_schedule = self._copy_schedule_and_compress()
-        num_op = len(compressd_schedule)
+        num_op = len(compressd_schedule[0])
         num_m = len(compressd_schedule)
         visited_neighbours_sequenzes = set()
         visited_neighbours = set()
