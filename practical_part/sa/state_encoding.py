@@ -4,6 +4,7 @@ import sys
 from itertools import groupby
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import time
 
 
 class JobShopProblem:
@@ -17,6 +18,8 @@ class JobShopProblem:
         # ]
         # an operation is a 4 tuple (job, operation, machine, time_steps)
         self.jobs = jobs
+        self.num_jobs = len(jobs)
+        self.num_ops = len(jobs[0])
 
     @staticmethod
     def load(table: str):
@@ -183,79 +186,6 @@ class Schedule:
                 offset -= old_space_size
             index += 1
 
-    def _is_cyclic(self):
-        checked_operations = []
-        for machine in self.schedule:
-            for operation_tuple in machine:
-                if operation_tuple not in checked_operations and operation_tuple[0] is not None:
-                    is_cyclic, seen_operations = self._is_cyclic_recursion(operation_tuple, [])
-                    if is_cyclic:
-                        return True
-                    checked_operations += seen_operations
-        return False
-
-    def _is_cyclic_recursion(self, operation_tuple, seen_operations):
-        seen_operations = set(copy.copy(seen_operations))
-        seen_operations.add(operation_tuple)
-        job, operation, machine, time_steps = operation_tuple
-        dependencies = []
-        # previous operation in machine
-        machine_list = self.schedule[machine]
-        machine_index = machine_list.index(operation_tuple)
-        for index in reversed(range(machine_index)):
-            current_operation = machine_list[index]
-            if current_operation[0] is not None:
-                dependencies.append(current_operation)
-                break
-        # previous operation in job
-        if operation != 0:
-            dependencies.append(self.jobs[job][operation-1])
-
-        for dependency in dependencies:
-            if dependency in seen_operations:
-                return True, seen_operations
-            else:
-                is_cyclic, seen_operations_new = self._is_cyclic_recursion(dependency, seen_operations)
-                seen_operations.union(seen_operations_new)
-                if is_cyclic:
-                    return True, seen_operations
-        return False, seen_operations
-
-    def _add_idle_spaces(self):
-        time_stamp = 0
-        # operations (list) contains all operations at the current time stamp
-        operations = self._get_operations_at_timestamp(time_stamp)
-        # increment time stamp continuously
-        while operations:
-            # group operations by jobs (each group contains all operations belonging to one job)
-            groups = groupby(operations, lambda x: x[0])
-            for key, group in groups:
-                group = list(group)
-                # if group is not group of spaces
-                if group[0][0] is not None:
-                    group.sort(key=lambda x: x[1])
-                    # do for earliest operation in that group
-                    earliest_operation = group.pop(0)
-                    job, operation, machine, time_steps = earliest_operation
-                    jobs_previous_op_end = 0
-                    # add offset to previous operation in job if necessary
-                    if operation != 0:
-                        jobs_previous_op_end = self._get_operation_end(job, operation-1)
-                        operation_start = self._get_operation_end(job, operation) - time_steps
-                        offset = jobs_previous_op_end - operation_start
-                        if offset > 0:
-                            self._offset_operation(earliest_operation, offset)
-                    last_operation_end = jobs_previous_op_end + time_steps
-                    # add offset for next operations in job if required
-                    for current_operation in range(operation + 1, len(self.jobs[job])):
-                        current_operation_tuple = self.jobs[job][current_operation]
-                        time_steps = current_operation_tuple[3]
-                        current_operation_start = self._get_operation_end(job, current_operation) - time_steps
-                        offset = last_operation_end - current_operation_start
-                        if offset > 0:
-                            self._offset_operation(current_operation_tuple, offset)
-            time_stamp += 1
-            operations = self._get_operations_at_timestamp(time_stamp)
 
     # semi deep copy (references to jobs are kept) and remove idle spaces
     def _copy_schedule_and_compress(self):
@@ -267,34 +197,6 @@ class Schedule:
                     new_machine.append(operation)
             new_schedule.append(new_machine)
         return new_schedule
-
-    # calculates whole neighbourhood (would not recommend using it as it takes forever)
-    def get_neighbourhood(self):
-        neighbourhood = []
-        schedule_compressed = self._copy_schedule_and_compress()
-        # generate neighbourhood by switching every valid pair of operations
-        for machine_index in range(len(schedule_compressed)):
-            machine = schedule_compressed[machine_index]
-            for operation1_index in range(len(machine)):
-                operation1 = machine[operation1_index]
-                if operation1[0] is not None:
-                    for operation2_index in range(operation1_index+1, len(machine)):
-                        operation2 = machine[operation2_index]
-                        # if valid pair of operations (no idle spaces and do not belong to the same job) is found
-                        if operation2[0] is not None and operation1[0] != operation2[0]:
-                            new_schedule = self._copy_schedule_and_compress()
-                            # switch operations in new schedule
-                            new_machine = new_schedule[machine_index]
-                            new_machine[operation1_index] = operation2
-                            new_machine[operation2_index] = operation1
-                            new_schedule = Schedule(new_schedule)
-                            # add spaces and make schedule valid if schedule is not cyclic
-                            if not new_schedule._is_cyclic():
-                                new_schedule._add_idle_spaces()
-                                neighbourhood.append(new_schedule)
-                                sys.stdout.write('\rGenerated {0} neighbours'.format(len(neighbourhood)))
-                                sys.stdout.flush()
-        return neighbourhood
 
     
     def _combine_empty_spaces(self, machine_num):
@@ -349,7 +251,7 @@ class Schedule:
         self.schedule = schedule
 
 
-    def _decompress(self):
+    def decompress(self):
         while not self.is_valid():         
             for machine_num, machine_schedule in enumerate(self.schedule):
                 for op_index, operation in enumerate(machine_schedule):
@@ -374,36 +276,79 @@ class Schedule:
                             self._combine_empty_spaces(machine_num)
                             self.m_minimize_empty_spaces(machine_num)
                               
-        
 
-    def _random_neighbour_generator(self):
-        compressed_schedule = self._copy_schedule_and_compress()
-        schedule_index = [x for x in range(len(compressed_schedule))]
-        while schedule_index:
-            machine_number = random.randint(0, len(schedule_index) - 1)
-            machine_schedule_index = schedule_index.pop(machine_number)
-            machine_schedule = compressed_schedule[machine_schedule_index]
-            operations = [x for x in range(len(machine_schedule))]
-            while operations:
-                rand_op = random.randint(0, len(operations) - 1)
-                operation_index  = operations.pop(rand_op)
-                operation_one = machine_schedule[operation_index]
-                for operation_two_index in operations:
-                    operation_two = machine_schedule[operation_two_index]
-                    if operation_one[0] != operation_two[0]:
-                        new_schedule = Schedule(self.schedule)._copy_schedule_and_compress()
-                        new_machine = new_schedule[machine_schedule_index]
-                        if new_machine != machine_schedule:
-                            print("Error", new_machine)                           
-                            exit()
-                        new_machine[operation_index] = operation_two
-                        new_machine[operation_two_index] = operation_one
-                        neighbour = Schedule(new_schedule)
-                        if not neighbour._is_cyclic():
-                            neighbour._decompress()
-                            yield neighbour
+    def get_sequenze(self, sched: list, num_op: int, num_machines: int):
+        sequenze = []
+        
+        for op in range(num_op):
+            for machine in range(num_machines):
+                sequenze.append(sched[machine][op][0])
+        return sequenze
+
+    
+    def sequenze_to_schedule(self, sequenz: list, machine_num: int):
+        sched = [[] for m in range(machine_num)]
+        job_operation = [0 for i in range(len(self.jobs))]
+
+        for op in sequenz:
+            job_op = (op, job_operation[op])
+            job_operation[op] += 1
+            operation_tuble  = self.jobs[job_op[0]][job_op[1]]
+            sched[operation_tuble[2]].append(operation_tuble)
+
+        return sched
+    
+
+    def sequenz_to_string(self, sequenz):
+        return str(sequenz)
+    
+
+    def random_neighbour_generator(self):
+        compressd_schedule = self._copy_schedule_and_compress()
+        num_op = len(compressd_schedule)
+        num_m = len(compressd_schedule)
+        visited_neighbours_sequenzes = set()
+        visited_neighbours = set()
+        visited_neighbours.add(Schedule(compressd_schedule).to_string())
+        sequenz = self.get_sequenze(compressd_schedule, num_op, num_m)
+        sequenz_index = [x for x in range(len(sequenz))]
+        while sequenz_index:
+            rand_index  =  random.randrange(len(sequenz_index))
+            op_index_one = sequenz_index.pop(rand_index)
+            possible_partners = [i for i in sequenz_index if sequenz[i] != sequenz[op_index_one]]
+            while possible_partners:
+                neighbour_sequenz = copy.deepcopy(sequenz)
+                rand_index = random.randrange(len(possible_partners))
+                op_index_two = possible_partners.pop(rand_index)
+                neighbour_sequenz[op_index_one], neighbour_sequenz[op_index_two] = neighbour_sequenz[op_index_two], neighbour_sequenz[op_index_one]
+                if self.sequenz_to_string(neighbour_sequenz) not in visited_neighbours_sequenzes:
+                    visited_neighbours_sequenzes.add(self.sequenz_to_string(neighbour_sequenz))
+                    neighbour_schedule = self.sequenze_to_schedule(neighbour_sequenz, num_m)
+                    neighbour = Schedule(neighbour_schedule)
+                    if neighbour.to_string() not in visited_neighbours:
+                        visited_neighbours.add(neighbour.to_string())
+                        neighbour.decompress()
+                        yield neighbour
         yield None
     
+    
+
+    def random_neighbour_generator_three(self):
+        compressd_schedule = self._copy_schedule_and_compress()
+        num_op = len(compressd_schedule)
+        num_m = len(compressd_schedule)
+        
+        sequenz = self.get_sequenze(compressd_schedule, num_op, num_m)
+        for i in range(len(sequenz)):
+            neighbour = copy.deepcopy(sequenz)
+            swap_idx = random.randrange(len(sequenz))
+            neighbour[i], neighbour[swap_idx] = neighbour[swap_idx], neighbour[i]
+            neighbour_schedule = self.sequenze_to_schedule(neighbour, num_m)
+            schedule = Schedule(neighbour_schedule)
+            schedule.decompress()
+            yield schedule
+        yield None
+
 
 
     def visualize(self, with_labels=True):
@@ -424,12 +369,16 @@ class Schedule:
                     color = cmap(job)
                 rectangle = patches.Rectangle((x, y), time_steps, 1, color=color)
                 if with_labels and operation is not None:
-                    plt.text(x+(time_steps / 2), y + 0.5, str(operation), ha='center', va='center')
+                    plt.text(x+(time_steps / 2), y + 0.5, str(job) + ":" + str(operation), ha='center', va='center')
                 ax.add_patch(rectangle)
                 x += time_steps
 
 
     def copy(self):
         return Schedule(self.schedule)
+    
+
+    def to_string(self):
+        return "-".join([str(x) for x in self.schedule])
 
 

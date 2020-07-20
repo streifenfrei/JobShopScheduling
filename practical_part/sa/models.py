@@ -6,6 +6,8 @@ from django.db import models
 class Table(models.Model):
     name = models.CharField(max_length=100)
     content = models.TextField()
+    upper_bound = models.CharField(max_length=255, default="K.a")
+    lower_bound = models.CharField(max_length=255, default="K.a")
 
 
     def content_to_string(self):

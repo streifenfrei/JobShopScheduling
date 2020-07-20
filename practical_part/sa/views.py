@@ -9,8 +9,8 @@ from .simulated_annealing import run_simmulated_annealing
 # Create your views here.
 def index(request):
     return render(request, "html/index.html")
-    
-        
+
+
 def run(request):
     if request.method == 'GET':
         tables = Table.objects.all()
@@ -18,7 +18,32 @@ def run(request):
         tables = controller.sort_by_table_size()
         table = controller.get_table_by_id(tables[0].id)
         head, body = controller.for_table(table)
-        context = { 'tables' : tables, 'body' : body, 'head' : head,}
+        context = { 'tables' : tables, 'body' : body, 'head' : head, 'table' : table}
+        return render(request=request, template_name="html/run_final.html", context=context)
+
+
+def sa_final(request, id):
+    if request.method == "GET":
+        table = Table.objects.get(pk=id)
+        t_controller = TableController(list(Table.objects.all()))
+        r_controller = ResultController(t_controller)
+        result_id = run_simmulated_annealing(str(table.content), id, table.name, r_controller)
+        result = Result.objects.get(pk=result_id)
+        if result_id is not None:
+            data = {'success' : 1, 'source' : "static/" + result.result_image, 'result_length' : result.result_length, 'runtime' : result.runtime}
+        else:
+            data = {'success' : 1, 'source' : "No new result", 'result_length' : "No new result", 'runtime' :  "No new result"}
+        return JsonResponse(data)
+    
+        
+def test(request):
+    if request.method == 'GET':
+        tables = Table.objects.all()
+        controller = TableController(list(tables))
+        tables = controller.sort_by_table_size()
+        table = controller.get_table_by_id(tables[0].id)
+        head, body = controller.for_table(table)
+        context = { 'tables' : tables, 'body' : body, 'head' : head, 'table' : table}
         return render(request=request, template_name="html/run.html", context=context)
 
 def change_table(request , id):
@@ -27,7 +52,7 @@ def change_table(request , id):
     tables = controller.sort_by_table_size()
     table = controller.get_table_by_id(int(id))
     head, body = controller.for_table(table)
-    context = {  'body' : body, 'head' : head,}
+    context = {  'body' : body, 'head' : head, 'table' : table}
     data = {'content' : render_to_string(template_name="html/table.html", context=context)}
     return JsonResponse(data)
 
@@ -37,7 +62,7 @@ def sa(request, id, temp, r_rate, count, ci, sa):
         table = Table.objects.get(pk=id)
         t_controller = TableController(list(Table.objects.all()))
         r_controller = ResultController(t_controller)
-        result_id = run_simmulated_annealing(str(table.content), id, table.name, r_controller, temp=float(temp), reduction_rate=float(r_rate), count=int(count), count_increase=float(ci), sa_num=int(sa))
+        result_id = run_simmulated_annealing(str(table.content), id, table.name, r_controller, temp=float(temp), reduction_rate=float(r_rate), count=int(count), count_increase=float(ci), sa_num=int(sa), test=True)
         result = Result.objects.get(pk=result_id)
         if result_id is not None:
             data = {'success' : 1, 'source' : "static/" + result.result_image, 'result_length' : result.result_length, 'runtime' : result.runtime}
