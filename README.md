@@ -1,12 +1,12 @@
-#Simulated annealing
+# Simulated annealing
 
-##Requirements
-*Python 3
-*matplot
-*django
+## Requirements
+* Python 3
+* matplot
+* django
 
 
-##Manual
+## Manual
 
 1. Navigate in the directory practical_part
 2. enter the command: $python3 manage.py runserver
@@ -19,12 +19,12 @@
 
 To run the simulated annealing, navigate to the Run page, select a problem and click the Run button.
 
-![Run](/imgs/run.png)
+![Run](/imgs/run.jpg)
 
 When the algorithm is complete, the resulting image is displayed.
 In the Results section all results achieved so far are saved.
 
-![Results](/imgs/results.png)
+![Results](/imgs/results.jpg)
 
 #Some benchmarks
 
